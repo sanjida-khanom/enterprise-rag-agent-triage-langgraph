@@ -1,0 +1,37 @@
+[
+  {
+    "doc_id": "CX-REF-009-1",
+    "title": "Package Migration Rules",
+    "content": "Prepaid subscribers may change their package once per 30-day cycle at no charge. A second change within the same 30-day cycle carries a BDT 30 migration fee. Postpaid subscribers may change their plan only at the start of a billing cycle; mid-cycle plan changes are not permitted and the request is queued and applied on the next bill date."
+  },
+  {
+    "doc_id": "CX-REF-009-2",
+    "title": "Emergency Balance Eligibility",
+    "content": "Eligible prepaid subscribers may request emergency balance up to BDT 100. The amount plus a service charge is deducted from the next recharge. Eligibility requires at least 90 days of active usage history on the network and no existing unpaid emergency balance. Postpaid subscribers are not eligible for emergency balance."
+  },
+  {
+    "doc_id": "CX-REF-009-3",
+    "title": "Mobile Number Portability",
+    "content": "Mobile Number Portability requests require a valid national ID matching the SIM registration, all outstanding dues cleared, and the connection active with the current operator for at least 90 days. Porting completes within 3 working days of request submission. Requests with outstanding dues are rejected automatically."
+  },
+  {
+    "doc_id": "CX-REF-009-4",
+    "title": "Billing Disputes",
+    "content": "Postpaid billing disputes must be raised within 30 days of bill generation. During investigation the disputed amount is not treated as overdue, but undisputed amounts remain payable by the due date. Duplicate charge claims require a ticket to be raised for the billing team to investigate; front-line staff cannot reverse charges directly."
+  },
+  {
+    "doc_id": "CX-REF-009-5",
+    "title": "SIM Replacement",
+    "content": "SIM replacement requires the registered owner to attend a service centre in person with the original national ID. The replacement fee is BDT 150. Biometric re-verification is mandatory. Replacement cannot be processed over the phone or online."
+  },
+  {
+    "doc_id": "CX-REF-009-6",
+    "title": "Balance Validity and SIM Recycling",
+    "content": "Prepaid main account balance does not expire while the SIM remains active. A SIM is deactivated after 90 consecutive days with no revenue-generating activity, and permanently recycled after a further 90 days. Data pack validity is counted from the moment of activation, not from midnight."
+  },
+  {
+    "doc_id": "CX-REF-009-7",
+    "title": "Outstanding Dues and Service Restriction",
+    "content": "Postpaid accounts with outstanding dues exceeding BDT 300 past the due date are subject to outgoing call restriction. Plan upgrades are not permitted while dues remain outstanding. Dues must be cleared before any plan migration request is processed."
+  }
+]

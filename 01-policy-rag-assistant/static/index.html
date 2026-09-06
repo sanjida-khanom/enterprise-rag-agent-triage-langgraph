@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Policy Knowledge Assistant</title>
+<style>
+:root{
+  --navy-900:#0A1230; --navy-800:#131E4A; --navy-700:#1D2B63; --navy-600:#2A3B7D;
+  --canvas:#F6F8FC; --panel:#FFFFFF;
+  --text:#151C33; --text-2:#525C7E; --text-3:#8A93B2;
+  --line:#E2E7F3; --line-soft:#EFF2F9;
+
+  /* accents carry meaning: each names one retriever */
+  --semantic:#1B6FE0; --semantic-bg:#EAF2FE; --semantic-br:#BFD8FA;
+  --keyword:#C2680A;  --keyword-bg:#FEF5E7;  --keyword-br:#F6DDB4;
+  --both:#04916C;     --both-bg:#E4F6F0;     --both-br:#A9E2CE;
+  --refuse:#7A34D8;   --refuse-bg:#F3EBFE;   --refuse-br:#DCC7F8;
+  --teal:#00B39B;
+
+  --sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans Bengali",sans-serif;
+  --mono:ui-monospace,"Cascadia Mono","Segoe UI Mono",Consolas,monospace;
+  --shadow:0 1px 2px rgba(16,26,60,.06),0 8px 24px -12px rgba(16,26,60,.18);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--canvas);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-weight:660;letter-spacing:-.014em}
+p{margin:0}
+button{font:inherit;cursor:pointer}
+
+.top{background:linear-gradient(115deg,var(--navy-900) 0%,var(--navy-700) 58%,var(--navy-600) 100%);
+  color:#fff;padding:20px 28px;display:flex;justify-content:space-between;align-items:center;
+  gap:24px;flex-wrap:wrap;position:relative;overflow:hidden}
+.top::after{content:"";position:absolute;right:-60px;top:-90px;width:340px;height:340px;
+  background:radial-gradient(circle,rgba(0,179,155,.28),transparent 68%);pointer-events:none}
+.brand{display:flex;align-items:center;gap:13px;z-index:1}
+.mark{width:38px;height:38px;border-radius:9px;flex:none;background:linear-gradient(140deg,var(--teal),#1B6FE0);
+  display:grid;place-items:center;font-weight:700;font-size:15px;color:#04122B}
+.top h1{font-size:17px;letter-spacing:-.02em}
+.top .sub{font-size:13px;color:#A9B6DC;margin-top:2px;max-width:60ch}
+.stat{z-index:1;display:flex;gap:9px;flex-wrap:wrap}
+.chip{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);
+  border-radius:7px;padding:6px 12px;font-size:12px;color:#C3CDEA}
+.chip b{color:#fff;font-family:var(--mono);font-size:13px;display:block;font-weight:600}
+.chip.bad{background:rgba(250,120,120,.14);border-color:rgba(250,120,120,.3)}
+
+.shell{display:grid;grid-template-columns:308px minmax(0,1fr);min-height:calc(100vh - 79px)}
+
+.rail{background:linear-gradient(180deg,var(--navy-800),var(--navy-900));color:#C9D2EC;
+  padding:22px 16px 46px;overflow-y:auto;max-height:calc(100vh - 79px)}
+.rail-intro{font-size:12.5px;color:#95A2CC;line-height:1.55;padding-bottom:16px;margin-bottom:16px;
+  border-bottom:1px solid rgba(255,255,255,.1)}
+.grp{margin-bottom:20px}
+.grp-h{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:650;color:#7E8CBB;margin-bottom:9px}
+.grp-h i{width:6px;height:6px;border-radius:50%;background:var(--teal);flex:none}
+.scn{display:block;width:100%;text-align:left;color:#DCE3F5;background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px 12px;margin-bottom:7px;
+  font-size:13px;line-height:1.42;transition:background .14s,border-color .14s,transform .14s}
+.scn:hover{background:rgba(255,255,255,.1);border-color:rgba(0,179,155,.5);transform:translateX(2px)}
+.scn.key{border-left:3px solid var(--teal)}
+.scn .why{display:block;margin-top:5px;font-size:11.5px;color:#8B98C4;line-height:1.42}
+
+.main{padding:24px 28px 70px;max-width:1060px}
+.ask{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:var(--shadow)}
+.ask-row{display:flex;gap:10px}
+#q{flex:1;padding:12px 14px;border:1.5px solid var(--line);border-radius:9px;font:inherit;
+  background:#FBFCFE;min-width:0;transition:border-color .14s,box-shadow .14s}
+#q:focus{outline:0;border-color:var(--semantic);box-shadow:0 0 0 3px var(--semantic-bg)}
+.go{background:linear-gradient(135deg,var(--navy-700),var(--semantic));color:#fff;border:0;border-radius:9px;
+  padding:12px 24px;font-weight:600;box-shadow:0 4px 12px -4px rgba(27,111,224,.6);transition:filter .14s,transform .14s}
+.go:hover:not(:disabled){filter:brightness(1.1);transform:translateY(-1px)}
+.go:disabled{background:var(--text-3);box-shadow:none}
+.alt{background:var(--panel);border:1.5px solid var(--line);border-radius:9px;padding:12px 18px;
+  color:var(--text);font-weight:540;transition:border-color .14s,color .14s}
+.alt:hover:not(:disabled){border-color:var(--teal);color:#037A6A}
+.alt:disabled{color:var(--text-3)}
+.ctl{display:flex;gap:22px;align-items:center;margin-top:15px;padding-top:15px;
+  border-top:1px solid var(--line-soft);flex-wrap:wrap}
+.ctl-l{font-size:12.5px;color:var(--text-2);font-weight:540}
+.seg{display:inline-flex;background:var(--canvas);border:1px solid var(--line);border-radius:8px;padding:3px;gap:3px}
+.seg button{background:none;border:0;padding:6px 14px;font-size:12.5px;border-radius:6px;
+  color:var(--text-2);transition:background .14s,color .14s}
+.seg button[aria-pressed=true]{background:var(--panel);font-weight:600;box-shadow:0 1px 3px rgba(16,26,60,.12)}
+.seg button[data-m=vector][aria-pressed=true]{color:var(--semantic)}
+.seg button[data-m=bm25][aria-pressed=true]{color:var(--keyword)}
+.seg button[data-m=hybrid][aria-pressed=true]{color:var(--both)}
+input[type=range]{accent-color:var(--semantic)}
+.hint{font-size:12.5px;color:var(--text-2);margin-top:11px;line-height:1.5;padding-left:11px;border-left:3px solid var(--line)}
+
+.pipe{margin-top:22px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:14px 15px;
+  opacity:.55;transition:opacity .3s,border-color .3s,box-shadow .3s,transform .3s}
+.stage.on,.stage.done{opacity:1}
+.stage.on{border-color:var(--semantic);box-shadow:0 0 0 3px var(--semantic-bg);transform:translateY(-2px)}
+.stage.done{border-color:var(--both-br);background:linear-gradient(180deg,var(--both-bg),var(--panel) 60%)}
+.s-n{width:23px;height:23px;border-radius:6px;background:var(--canvas);color:var(--text-3);display:grid;
+  place-items:center;font-family:var(--mono);font-size:11px;font-weight:600;margin-bottom:8px}
+.stage.on .s-n{background:var(--semantic);color:#fff}
+.stage.done .s-n{background:var(--both);color:#fff}
+.s-t{font-size:14px;font-weight:640;margin-bottom:4px}
+.s-d{font-size:12px;color:var(--text-2);line-height:1.42;min-height:34px}
+.s-m{font-family:var(--mono);font-size:11.5px;color:var(--text-3);margin-top:8px;font-weight:500}
+.stage.on .s-m{color:var(--semantic)}
+.stage.done .s-m{color:var(--both)}
+.bar{height:3px;background:var(--line-soft);border-radius:2px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:2px;
+  background:linear-gradient(90deg,var(--semantic),var(--teal));transition:width .45s ease}
+.stage.on .bar i{width:68%}
+.stage.done .bar i{width:100%;background:linear-gradient(90deg,var(--both),var(--teal))}
+
+.out{margin-top:22px;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  overflow:hidden;box-shadow:var(--shadow)}
+.out-h{padding:15px 20px;border-bottom:1px solid var(--line-soft);display:flex;justify-content:space-between;
+  gap:15px;align-items:center;flex-wrap:wrap;background:linear-gradient(180deg,#FBFCFE,var(--panel))}
+.out-q{font-size:14px;font-weight:600}
+.conf{display:flex;align-items:center;gap:7px;font-size:12px;background:var(--both-bg);
+  border:1px solid var(--both-br);color:#046B51;padding:5px 11px;border-radius:20px;font-weight:560}
+.answer{padding:20px;font-size:15.5px;line-height:1.68}
+.answer.refused{background:linear-gradient(180deg,var(--refuse-bg),var(--panel));border-left:4px solid var(--refuse)}
+.r-note{margin-top:13px;padding:11px 13px;background:rgba(255,255,255,.7);border:1px solid var(--refuse-br);
+  border-radius:8px;font-size:12.5px;color:#5B21A8;line-height:1.5}
+.r-note b{display:block;margin-bottom:3px}
+cite{font-style:normal;font-family:var(--mono);font-size:12px;font-weight:600;background:var(--both);
+  color:#fff;padding:2px 7px;border-radius:5px;cursor:pointer;transition:filter .14s;display:inline-block}
+cite:hover{filter:brightness(1.18)}
+.ctx{padding:13px 20px;background:linear-gradient(90deg,#F0FAF7,var(--panel));border-top:1px solid var(--line-soft);
+  border-left:4px solid var(--teal);font-size:12.5px;color:var(--text-2);line-height:1.5}
+.ctx b{color:#036B5D}
+
+.val{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));border-top:1px solid var(--line-soft)}
+.v{padding:14px 18px;border-right:1px solid var(--line-soft);position:relative}
+.v::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:2px}
+.v:nth-child(1)::before{background:var(--semantic)}
+.v:nth-child(2)::before{background:var(--teal)}
+.v:nth-child(3)::before{background:var(--both)}
+.v:nth-child(4)::before{background:var(--keyword)}
+.v:last-child{border-right:0}
+.v-n{font-family:var(--mono);font-size:20px;font-weight:660;letter-spacing:-.02em}
+.v-n span{font-size:12px;font-weight:500;color:var(--text-3)}
+.v-l{font-size:11.5px;color:var(--text-2);margin-top:2px;line-height:1.35}
+
+.p-h{padding:14px 20px;border-top:1px solid var(--line-soft);background:#FBFCFE;font-size:12.5px;color:var(--text-2)}
+.p-h b{color:var(--text)}
+.leg{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}
+.lg{display:flex;align-items:center;gap:6px;font-size:11.5px;padding:4px 10px;border-radius:20px;font-weight:560}
+.lg.a{background:var(--both-bg);color:#046B51;border:1px solid var(--both-br)}
+.lg.b{background:var(--semantic-bg);color:#14509F;border:1px solid var(--semantic-br)}
+.lg.c{background:var(--keyword-bg);color:#9A5208;border:1px solid var(--keyword-br)}
+.p{border-top:1px solid var(--line-soft);padding:14px 20px 14px 17px;border-left:4px solid transparent;transition:background .14s}
+.p.both{border-left-color:var(--both)}
+.p.semantic{border-left-color:var(--semantic)}
+.p.keyword{border-left-color:var(--keyword)}
+.p.used{background:linear-gradient(90deg,#F7FDFB,var(--panel))}
+.p-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:8px}
+.p-n{font-family:var(--mono);font-size:12px;font-weight:660;background:var(--navy-800);color:#fff;
+  border-radius:5px;padding:2px 8px}
+.p-src{font-size:13.5px;font-weight:600}
+.p-meta{font-family:var(--mono);font-size:11px;color:var(--text-3);margin-left:auto}
+.tag{font-size:11px;font-weight:640;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.t-both{background:var(--both-bg);color:#046B51;border:1px solid var(--both-br)}
+.t-semantic{background:var(--semantic-bg);color:#14509F;border:1px solid var(--semantic-br)}
+.t-keyword{background:var(--keyword-bg);color:#9A5208;border:1px solid var(--keyword-br)}
+.t-used{background:linear-gradient(135deg,var(--navy-700),var(--semantic));color:#fff}
+.p-text{font-size:13px;color:var(--text-2);line-height:1.55;white-space:pre-wrap;max-height:76px;
+  overflow:hidden;transition:max-height .2s}
+.p.open .p-text{max-height:none}
+.p-more{background:none;border:0;padding:0;margin-top:7px;font-size:12px;color:var(--semantic);font-weight:560}
+.p-more:hover{text-decoration:underline}
+
+.cmp{margin-top:22px;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  overflow:hidden;box-shadow:var(--shadow)}
+.cmp-h{padding:16px 20px;background:linear-gradient(115deg,var(--navy-900),var(--navy-700));color:#fff}
+.cmp-h h3{font-size:15px}
+.cmp-h p{font-size:12.5px;color:#A9B6DC;margin-top:5px;max-width:74ch;line-height:1.5}
+.cmp-g{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-soft)}
+.cc{background:var(--panel);padding:16px 17px;border-top:3px solid}
+.cc.vector{border-top-color:var(--semantic)}
+.cc.bm25{border-top-color:var(--keyword)}
+.cc.hybrid{border-top-color:var(--both)}
+.cc-m{font-size:13.5px;font-weight:660;margin-bottom:4px}
+.cc.vector .cc-m{color:var(--semantic)}
+.cc.bm25 .cc-m{color:var(--keyword)}
+.cc.hybrid .cc-m{color:var(--both)}
+.cc-s{font-size:11.5px;color:var(--text-3);margin-bottom:11px;line-height:1.45;min-height:44px}
+.cc-a{font-size:12.5px;line-height:1.55;color:var(--text-2);border-top:1px solid var(--line-soft);padding-top:11px}
+.cc-src{font-family:var(--mono);font-size:11px;color:var(--text-3);margin-top:9px;line-height:1.65}
+
+.err{margin-top:22px;background:var(--refuse-bg);border:1px solid var(--refuse-br);border-left:4px solid var(--refuse);
+  border-radius:11px;padding:16px 20px;font-size:13.5px;color:#5B21A8}
+.err b{display:block;margin-bottom:5px;font-size:14px}
+.err code{font-family:var(--mono);font-size:12px;background:#fff;padding:2px 6px;border-radius:4px;border:1px solid var(--refuse-br)}
+.empty{margin-top:22px;padding:44px 26px;text-align:center;border:1.5px dashed var(--line);
+  border-radius:12px;color:var(--text-2);font-size:13.5px;line-height:1.7;background:var(--panel)}
+.empty b{color:var(--text)}
+
+@media(max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .rail{max-height:none}
+  .pipe{grid-template-columns:1fr 1fr}
+  .cmp-g{grid-template-columns:1fr}
+  .main{padding:20px 16px 60px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <div class="mark">PK</div>
+    <div>
+      <h1>Policy Knowledge Assistant</h1>
+      <div class="sub">Answers staff questions from internal documents, and shows the source for every answer.</div>
+    </div>
+  </div>
+  <div class="stat" id="status"><span class="chip">connecting</span></div>
+</header>
+
+<div class="shell">
+  <aside class="rail">
+    <p class="rail-intro">Pick a question to see how it gets answered. The three marked with a teal edge are the ones worth watching closely.</p>
+    <div id="scenarios"></div>
+  </aside>
+
+  <main class="main">
+    <section class="ask">
+      <div class="ask-row">
+        <input id="q" placeholder="Ask about leave, expenses, network faults or tariffs" autocomplete="off">
+        <button class="go" id="go">Answer</button>
+        <button class="alt" id="cmp">Compare methods</button>
+      </div>
+      <div class="ctl">
+        <span class="ctl-l">Search method</span>
+        <div class="seg" id="modes">
+          <button data-m="hybrid" aria-pressed="true">Both</button>
+          <button data-m="vector" aria-pressed="false">Meaning</button>
+          <button data-m="bm25" aria-pressed="false">Exact word</button>
+        </div>
+        <span class="ctl-l">Passages: <b id="kv">4</b></span>
+        <input type="range" id="k" min="1" max="10" value="4" style="width:108px">
+      </div>
+      <p class="hint" id="hint">Both methods run together and their results are merged. Switch to one at a time to see what each contributes.</p>
+    </section>
+
+    <section class="pipe">
+      <div class="stage" data-s="1">
+        <div class="s-n">1</div><div class="s-t">Question</div>
+        <div class="s-d">Read as written, in any of three languages.</div>
+        <div class="s-m" id="m1">waiting</div><div class="bar"><i></i></div>
+      </div>
+      <div class="stage" data-s="2">
+        <div class="s-n">2</div><div class="s-t">Search</div>
+        <div class="s-d">Meaning-based and exact-word search run over every document.</div>
+        <div class="s-m" id="m2">waiting</div><div class="bar"><i></i></div>
+      </div>
+      <div class="stage" data-s="3">
+        <div class="s-n">3</div><div class="s-t">Merge</div>
+        <div class="s-d">Both lists combined. Passages found by both rank highest.</div>
+        <div class="s-m" id="m3">waiting</div><div class="bar"><i></i></div>
+      </div>
+      <div class="stage" data-s="4">
+        <div class="s-n">4</div><div class="s-t">Answer</div>
+        <div class="s-d">Written only from those passages, or refused if they fall short.</div>
+        <div class="s-m" id="m4">waiting</div><div class="bar"><i></i></div>
+      </div>
+    </section>
+
+    <div id="result"></div>
+  </main>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+let mode='hybrid', busy=false, scenarioMap={};
+const MODE_HINT={
+  hybrid:"Both methods run together and their results are merged. Switch to one at a time to see what each contributes.",
+  vector:"Meaning-based search only. Strong on paraphrase and other languages, weak on exact codes like NE-5502.",
+  bm25:"Exact-word search only. Finds codes and identifiers reliably, but misses anything phrased differently."
+};
+
+async function boot(){
+  try{
+    const h=await (await fetch('/api/health')).json();
+    $('#status').innerHTML = h.ready
+      ? `<span class="chip"><b>${h.documents}</b>documents</span>
+         <span class="chip"><b>${h.chunks}</b>passages indexed</span>`
+      : `<span class="chip bad"><b>not ready</b>${esc(h.error||'')}</span>`;
+    if(!h.ready) showError('Index not built','Run <code>python ingest.py --rebuild</code> in this folder, then reload this page.');
+  }catch(e){ $('#status').innerHTML='<span class="chip bad"><b>API unreachable</b>is the server running?</span>'; }
+  try{ renderScenarios((await (await fetch('/api/scenarios')).json()).scenarios); }catch(e){}
+}
+
+function renderScenarios(list){
+  const g={};
+  list.forEach(s=>{ (g[s.group] ||= []).push(s); scenarioMap[s.question]=s; });
+  $('#scenarios').innerHTML=Object.entries(g).map(([name,items])=>`
+    <div class="grp">
+      <div class="grp-h"><i></i>${esc(name)}</div>
+      ${items.map(s=>`<button class="scn${s.highlight?' key':''}" data-q="${esc(s.question)}">
+        ${esc(s.question)}<span class="why">${esc(s.business)}</span></button>`).join('')}
+    </div>`).join('');
+  document.querySelectorAll('.scn').forEach(b=>b.onclick=()=>{ $('#q').value=b.dataset.q; ask(); });
+}
+
+function stage(n,st,msg){
+  const el=document.querySelector(`.stage[data-s="${n}"]`);
+  el.classList.toggle('on',st==='on'); el.classList.toggle('done',st==='done');
+  if(msg!==undefined) $('#m'+n).textContent=msg;
+}
+const resetPipe=()=>{ for(let i=1;i<=4;i++) stage(i,'','waiting'); };
+
+async function ask(){
+  const question=$('#q').value.trim();
+  if(!question||busy) return;
+  busy=true; $('#go').disabled=true; $('#cmp').disabled=true;
+  $('#result').innerHTML=''; resetPipe();
+  stage(1,'on',question.length+' chars'); await sleep(150);
+  stage(1,'done','received'); stage(2,'on','searching');
+  const t0=performance.now();
+  try{
+    const res=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question,mode,k:+$('#k').value})});
+    if(!res.ok) throw new Error((await res.text()).slice(0,240));
+    const d=await res.json();
+    stage(2,'done',`${d.stats.vector_candidates} + ${d.stats.keyword_candidates} found`);
+    stage(3,'on','merging'); await sleep(170);
+    stage(3,'done',`${d.stats.returned} of ${d.stats.unique_after_fusion} kept`);
+    stage(4,'done',`${d.generation_ms} ms`);
+    render(d,Math.round(performance.now()-t0));
+  }catch(err){ resetPipe(); showError('Request failed',esc(err.message)); }
+  finally{ busy=false; $('#go').disabled=false; $('#cmp').disabled=false; }
+}
+
+function render(d,wall){
+  const scn=scenarioMap[d.question];
+  const both=d.passages.filter(p=>p.found_by==='both').length;
+  const answerHtml = d.refused
+    ? `<div class="answer refused">${esc(d.answer)}
+        <div class="r-note"><b>Refusing is the correct outcome here.</b>
+        The documents do not cover this. An invented answer would reach an employee or a customer as if it were policy.</div></div>`
+    : `<div class="answer">${linkCitations(d.answer)}</div>`;
+
+  $('#result').innerHTML=`
+    <section class="out">
+      <div class="out-h">
+        <div class="out-q">${esc(d.question)}</div>
+        <div class="conf">${both} of ${d.passages.length} passages confirmed by both methods</div>
+      </div>
+      ${answerHtml}
+      ${scn?`<div class="ctx"><b>Why this question:</b> ${esc(scn.shows)}</div>`:''}
+      <div class="val">
+        <div class="v"><div class="v-n">${(wall/1000).toFixed(1)}<span>s</span></div><div class="v-l">Question to answer</div></div>
+        <div class="v"><div class="v-n">${d.retrieval_ms}<span>ms</span></div><div class="v-l">Spent searching</div></div>
+        <div class="v"><div class="v-n">${d.cited.length}</div><div class="v-l">Passages cited in the answer</div></div>
+        <div class="v"><div class="v-n">~${d.approx_tokens||0}</div><div class="v-l">Tokens used, well under 1 BDT</div></div>
+      </div>
+      <div class="p-h">
+        <b>What it read.</b> Every answer above comes from these passages and nothing else.
+        <div class="leg">
+          <span class="lg a">Both methods agreed</span>
+          <span class="lg b">Meaning-based only</span>
+          <span class="lg c">Exact word only</span>
+        </div>
+      </div>
+      ${d.passages.map(passage).join('')}
+    </section>`;
+
+  document.querySelectorAll('.p-more').forEach(b=>b.onclick=()=>b.closest('.p').classList.toggle('open'));
+  document.querySelectorAll('cite').forEach(c=>c.onclick=()=>{
+    const el=document.querySelector(`.p[data-n="${c.dataset.n}"]`);
+    if(el){ el.classList.add('open'); el.scrollIntoView({behavior:'smooth',block:'center'}); }
+  });
+}
+
+function passage(p){
+  const label={both:'Both methods',semantic:'Meaning-based',keyword:'Exact word'}[p.found_by];
+  const ranks=[p.vector_rank!=null?`meaning #${p.vector_rank+1}`:null,
+               p.keyword_rank!=null?`words #${p.keyword_rank+1}`:null].filter(Boolean).join('  ');
+  return `<div class="p ${p.found_by}${p.cited?' used':''}" data-n="${p.n}">
+    <div class="p-top">
+      <span class="p-n">${p.n}</span>
+      <span class="p-src">${esc(p.source)}</span>
+      <span class="tag t-${p.found_by}">${label}</span>
+      ${p.cited?'<span class="tag t-used">used in answer</span>':''}
+      <span class="p-meta">${ranks}${p.score?'  score '+p.score:''}</span>
+    </div>
+    <div class="p-text">${esc(p.text)}</div>
+    <button class="p-more">Show full passage</button>
+  </div>`;
+}
+
+async function compare(){
+  const question=$('#q').value.trim();
+  if(!question||busy) return;
+  busy=true; $('#go').disabled=true; $('#cmp').disabled=true;
+  $('#result').innerHTML='<div class="empty">Running the same question three ways.<br>This takes a few seconds.</div>';
+  resetPipe(); stage(2,'on','three passes');
+  try{
+    const res=await fetch('/api/compare',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question,mode:'hybrid',k:+$('#k').value})});
+    const d=await res.json();
+    const names={vector:'Meaning-based only',bm25:'Exact-word only',hybrid:'Both, merged'};
+    const subs={
+      vector:'Understands paraphrase and other languages. Confuses similar-looking codes.',
+      bm25:'Matches exact words. Blind to anything phrased differently.',
+      hybrid:'What this system uses by default.'
+    };
+    $('#result').innerHTML=`
+      <section class="cmp">
+        <div class="cmp-h">
+          <h3>Same question, three ways of finding the answer</h3>
+          <p>This is the argument for running two search methods instead of one. On questions containing an exact identifier, meaning-based search alone retrieves a plausible neighbour rather than the right passage.</p>
+        </div>
+        <div class="cmp-g">
+          ${d.results.map(r=>`<div class="cc ${r.mode}">
+            <div class="cc-m">${names[r.mode]}</div>
+            <div class="cc-s">${subs[r.mode]}</div>
+            ${r.error?`<div class="cc-a" style="color:var(--refuse)">${esc(r.error)}</div>`
+              :`<div class="cc-a">${r.refused?'<b>Refused.</b> ':''}${esc(r.answer.slice(0,300))}${r.answer.length>300?'…':''}</div>
+                <div class="cc-src">${r.sources.map(s=>esc(s.source)).join('<br>')}</div>
+                <div class="cc-src">${r.total_ms} ms</div>`}
+          </div>`).join('')}
+        </div>
+      </section>`;
+    stage(2,'done','complete');
+  }catch(err){ showError('Comparison failed',esc(err.message)); }
+  finally{ busy=false; $('#go').disabled=false; $('#cmp').disabled=false; }
+}
+
+const linkCitations=t=>esc(t).replace(/\[(\d+)\]/g,(_,n)=>`<cite data-n="${n}">${n}</cite>`);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const showError=(t,b)=>$('#result').innerHTML=`<div class="err"><b>${t}</b>${b}</div>`;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+$('#go').onclick=ask;
+$('#cmp').onclick=compare;
+$('#q').addEventListener('keydown',e=>{ if(e.key==='Enter') ask(); });
+$('#k').addEventListener('input',e=>$('#kv').textContent=e.target.value);
+document.querySelectorAll('#modes button').forEach(b=>b.onclick=()=>{
+  mode=b.dataset.m;
+  document.querySelectorAll('#modes button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+  $('#hint').textContent=MODE_HINT[mode];
+});
+$('#result').innerHTML='<div class="empty"><b>Pick a question from the left, or type your own.</b><br>The four steps above light up as the system works through it.</div>';
+boot();
+</script>
+</body>
+</html>

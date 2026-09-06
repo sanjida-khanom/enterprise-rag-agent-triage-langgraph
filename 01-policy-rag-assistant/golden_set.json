@@ -1,0 +1,128 @@
+[
+  {
+    "question": "How many days of annual leave am I entitled to each year?",
+    "expected_source": "hr_leave_policy.md",
+    "expected_keywords": ["20"],
+    "note": "baseline factual lookup"
+  },
+  {
+    "question": "Can I carry forward unused annual leave, and until when?",
+    "expected_source": "hr_leave_policy.md",
+    "expected_keywords": ["10", "march"],
+    "note": "two facts in one answer"
+  },
+  {
+    "question": "How long is maternity leave?",
+    "expected_source": "hr_leave_policy.md",
+    "expected_keywords": ["180"],
+    "note": "single fact"
+  },
+  {
+    "question": "I was sick for three days. Do I need a medical certificate?",
+    "expected_source": "hr_leave_policy.md",
+    "expected_keywords": ["certificate"],
+    "note": "requires applying a threshold rule, not just quoting it"
+  },
+  {
+    "question": "What is the daily meal allowance for travel outside Dhaka?",
+    "expected_source": "hr_expense_policy.md",
+    "expected_keywords": ["1,200"],
+    "note": "must not confuse with the inside-Dhaka figure"
+  },
+  {
+    "question": "I forgot to claim an expense from 45 days ago. Can I still get reimbursed?",
+    "expected_source": "hr_expense_policy.md",
+    "expected_keywords": ["divisional head"],
+    "note": "falls in the conditional middle band, tests reasoning over a rule"
+  },
+  {
+    "question": "Who approves an expense claim of BDT 150,000?",
+    "expected_source": "hr_expense_policy.md",
+    "expected_keywords": ["chief financial officer"],
+    "note": "approval matrix lookup"
+  },
+  {
+    "question": "Can I claim a traffic fine incurred during a client visit?",
+    "expected_source": "hr_expense_policy.md",
+    "expected_keywords": ["not"],
+    "note": "negative answer, model must not be agreeable by default"
+  },
+  {
+    "question": "What does alarm code NE-5502 mean and what causes it?",
+    "expected_source": "network_escalation_runbook.md",
+    "expected_keywords": ["vswr", "feeder"],
+    "note": "EXACT TOKEN TEST - pure vector search often misses alphanumeric codes; this is where hybrid retrieval earns its place"
+  },
+  {
+    "question": "What is the resolution target for an S1 fault?",
+    "expected_source": "network_escalation_runbook.md",
+    "expected_keywords": ["4 hour"],
+    "note": "must not mix up response target with resolution target"
+  },
+  {
+    "question": "A site outage is affecting 3000 subscribers. What severity is it and who do I escalate to?",
+    "expected_source": "network_escalation_runbook.md",
+    "expected_keywords": ["s2", "shift lead"],
+    "note": "multi-hop: classify by threshold, then look up the escalation path"
+  },
+  {
+    "question": "When should I report a site running on battery backup?",
+    "expected_source": "network_escalation_runbook.md",
+    "expected_keywords": ["90 minute"],
+    "note": "distractor risk - '90' also appears in the tariff document"
+  },
+  {
+    "question": "Can a postpaid customer change their plan in the middle of the billing cycle?",
+    "expected_source": "customer_tariff_faq.md",
+    "expected_keywords": ["not permitted"],
+    "note": "prepaid and postpaid rules differ; tests precision"
+  },
+  {
+    "question": "How much does a second package change in the same month cost?",
+    "expected_source": "customer_tariff_faq.md",
+    "expected_keywords": ["30"],
+    "note": "conditional fee"
+  },
+  {
+    "question": "What are the requirements to port my number to another operator?",
+    "expected_source": "customer_tariff_faq.md",
+    "expected_keywords": ["national id", "90 days"],
+    "note": "multi-part answer"
+  },
+  {
+    "question": "How much is the SIM replacement fee?",
+    "expected_source": "customer_tariff_faq.md",
+    "expected_keywords": ["150"],
+    "note": "simple lookup with a numeric distractor nearby"
+  },
+  {
+    "question": "amar package change korte koto taka lagbe?",
+    "expected_source": "customer_tariff_faq.md",
+    "expected_keywords": ["30"],
+    "note": "BANGLISH - romanised Bangla against English source documents. Cross-lingual retrieval; fails entirely on an English-only embedding model"
+  },
+  {
+    "question": "ছুটি কত দিন পাব বছরে?",
+    "expected_source": "hr_leave_policy.md",
+    "expected_keywords": ["20"],
+    "note": "BANGLA SCRIPT - cross-lingual retrieval and same-language answering"
+  },
+  {
+    "question": "What is the company's policy on remote work and work from home?",
+    "expected_source": null,
+    "expected_keywords": [],
+    "note": "REFUSAL TEST - plausible HR question with no source document. Must refuse, not invent"
+  },
+  {
+    "question": "How many vacation days does the CEO get?",
+    "expected_source": null,
+    "expected_keywords": [],
+    "note": "REFUSAL TEST - adjacent to real content, tempting to extrapolate from the general leave rule"
+  },
+  {
+    "question": "What is the penalty for late payment of a postpaid bill?",
+    "expected_source": null,
+    "expected_keywords": [],
+    "note": "REFUSAL TEST - the billing document exists and discusses due dates, so retrieval will return confident-looking but insufficient context"
+  }
+]

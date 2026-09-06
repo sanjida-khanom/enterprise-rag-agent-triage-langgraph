@@ -1,0 +1,7 @@
+msisdn,name,account_type,current_plan,balance,tenure_days,billing_cycle_day,last_plan_change_days_ago,outstanding_dues
+01711000001,Rahim Uddin,postpaid,Postpaid Pro 799,0,540,1,120,450
+01711000002,Nusrat Jahan,prepaid,Prepaid Smart 299,42,210,0,15,0
+01711000003,Karim Hossain,prepaid,Prepaid Basic 149,8,45,0,12,0
+01711000004,Fatema Begum,prepaid,Prepaid Smart 299,3,730,0,200,0
+01711000005,Tanvir Ahmed,postpaid,Postpaid Lite 499,0,95,15,60,0
+01711000006,Shirin Akter,prepaid,Prepaid Max 499,156,1200,0,400,0

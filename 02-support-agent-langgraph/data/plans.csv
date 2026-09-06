@@ -1,0 +1,7 @@
+plan_code,plan_name,account_type,monthly_price,data_gb,voice_minutes,sms,notes
+PRE149,Prepaid Basic 149,prepaid,149,5,150,100,Entry level
+PRE299,Prepaid Smart 299,prepaid,299,15,400,300,Most popular
+PRE499,Prepaid Max 499,prepaid,499,35,800,500,Heavy data users
+POST499,Postpaid Lite 499,postpaid,499,20,500,300,Includes itemised bill
+POST799,Postpaid Pro 799,postpaid,799,45,1000,500,Priority customer care
+POST1499,Postpaid Elite 1499,postpaid,1499,100,Unlimited,1000,Includes international roaming pack
